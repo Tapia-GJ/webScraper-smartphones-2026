@@ -94,11 +94,22 @@ async function main() {
           async () => {
             const detailPage = new KimovilDetailPage(page!);
             await detailPage.navigateToDetail(url);
+
+            const isOld = await detailPage.isOlderThan3Years();
+            if (isOld) {
+              return null;
+            }
+
             return await detailPage.extractSmartphoneData(url);
           },
           config.retries.maxAttempts,
           config.retries.delayMs,
         );
+
+        if (smartphone === null) {
+          logger.info("🛑 Se encontró un teléfono con más de 3 años de antigüedad. Deteniendo la extracción general.");
+          break; // Detenemos todo el scraper
+        }
 
         // Guardar en CSV inmediatamente (modo append)
         await appendToCSV(smartphone);

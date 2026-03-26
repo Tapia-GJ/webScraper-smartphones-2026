@@ -56,6 +56,34 @@ export class KimovilDetailPage {
   }
 
   /**
+   * Verifica en el DOM si el smartphone tiene más de 3 años de antigüedad
+   * buscando el año en la fecha de presentación o lanzamiento.
+   */
+  async isOlderThan3Years(): Promise<boolean> {
+    try {
+      const labels = ["Presentación", "Fecha de presentación", "Release Date", "Lanzamiento"];
+      const fecha = await this.extractSpecByLabel(labels);
+      
+      if (fecha) {
+        // Buscamos un año de 4 dígitos en el texto
+        const yearMatch = fecha.match(/\b(20\d{2})\b/);
+        if (yearMatch) {
+          const year = parseInt(yearMatch[1], 10);
+          const currentYear = new Date().getFullYear();
+          if (currentYear - year >= 3) {
+            logger.warn(`⚠️ Teléfono con 3 o más años detectado (Año: ${year}).`);
+            return true;
+          }
+        }
+      }
+      return false;
+    } catch (error) {
+      logger.warn("⚠️ Error al verificar antigüedad del teléfono", { error });
+      return false;
+    }
+  }
+
+  /**
    * Extrae la marca del smartphone
    * Kimovil suele tener la marca como parte del título o en un breadcrumb
    */
